@@ -1,0 +1,14 @@
+# Begin PHP_API_APP
+<IfModule mod_rewrite.c>
+
+    RewriteEngine on
+    RewriteBase /
+    Options -Indexes
+
+    # Rewrite rules:
+    RewriteCond %{REQUEST_METHOD} (.+)
+    RewriteRule ^app\.php$ - [L]
+    RewriteRule ^(.*)$ /app.php [NC,L,QSA]
+    
+</IfModule>
+# End PHP_API_APP

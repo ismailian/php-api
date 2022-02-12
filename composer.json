@@ -1,0 +1,18 @@
+{
+    "name": "ismailian/php-api",
+    "description": "PhpApi is a php based web application equiped with all the basic functionality and made for the sole purpose of creating APIs quickly.",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PhpApi\\": "PhpApi/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ismail Aatif",
+            "email": "techcyber598@gmail.com"
+        }
+    ],
+    "require": {}
+}
