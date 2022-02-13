@@ -26,7 +26,7 @@ $ApiApp = new Api($options = [
         'Cors' => [
             'origin'  => 'http://localhost',
             'methods' => ['*'],
-            'header'  => ['*']
+            'headers'  => ['*']
         ]
     ],
 ]);
