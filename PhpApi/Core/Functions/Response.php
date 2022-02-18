@@ -2,14 +2,16 @@
 
 namespace PhpApi\Core\Functions;
 
-use PhpApi\Core\Adapters\ResponseAdapter;
+use PhpApi\Core\Helpers\Responder;
 
 /**
  * The response class.
  * Once initialized it automatically prepares for a response to be delivered.
  */
-class Response extends ResponseAdapter
+class Response
 {
+
+    use Responder;
 
     /**
      * default constructor
@@ -20,15 +22,53 @@ class Response extends ResponseAdapter
     }
 
     /**
-     * redirect to a route.
-     * @param string $route the route to redirect to.
+     * send response to the client.
+     * 
+     * @param string $contentType the mime type of the response resource.
+     * @param mixed $data the content data to be sent.
      */
-    public function redirect(string $route): void
+    public function send($data)
     {
-        /** set http status code */
-        http_response_code(302);
+        $this->prepare();
+        echo $data;
+    }
 
-        /** set location to route */
-        header("Location: " . $route);
+    /**
+     * respond with json data.
+     * 
+     * @param mixed $data the data to be sent back to the client.
+     */
+    public function json($data)
+    {
+        $this->headers['Content-Type'] = 'application/json';
+        $this->prepare();
+
+        echo json_encode($data, JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * respond with text data
+     * @param mixed $data the data to be sent back to the client.
+     */
+    public function text($data)
+    {
+        $this->headers['Content-Type'] = 'text/plain';
+        $this->prepare();
+
+        /** send */
+        echo $this->data;
+    }
+
+    /**
+     * respond with html data
+     * @param mixed $data the data to be sent back to the client.
+     */
+    public function html($data)
+    {
+        $this->headers['Content-Type'] = 'text/html';
+        $this->prepare();
+
+        /** send */
+        echo $this->data;
     }
 }
