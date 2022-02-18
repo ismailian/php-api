@@ -2,33 +2,23 @@
 
 namespace PhpApi\Core\Helpers;
 
+use PhpApi\Core\Functions\Request;
+
 /**
  * The url helper.
  * Contains all the functionality needed to parse, extract and match routes to request urls.
  */
-class Url
+trait Url
 {
-
-    /**
-     * checks if a route is dynamic.
-     * @param string $route the route to check.
-     * @return bool returns true if route is dynamic else false.
-     */
-    public static function isDynamic($route): bool
-    {
-        @preg_match_all('/\/?(?<name>\:\w+[^\s\/])\/?/', $route, $result);
-        return isset($result) && count($result['name']) > 0;
-    }
 
     /**
      * extracts parameters' names from a dynamic route.
      * @param string $route the route to extract parameters from.
      * @return array returns an array with extracted parameters.
      */
-    public static function getParams($route): array
+    private function getParams($route): array
     {
-        // @preg_match_all('/\/?(?<name>\:\w+[^\s\/])\/?/', $route, $result);
-        @preg_match_all('/\/?(?<name>\:[a-zA-Z0-9\_\@\.]+[^\s\/])\/?/', $route, $result);
+        @preg_match_all('/\/?(?<name>\:[^\s\-\/]+)\/?/', $route, $result);
         $params = [];
         foreach ($result['name'] as $param) {
             $params["/\\" . substr($param, 0) . "/"] = '(?<' . @substr($param, 1) . '>[^\s/]+)';
@@ -39,14 +29,15 @@ class Url
     /**
      * matches a url to a route.
      * It matches a url against a route and returns data based on what it finds.
+     * @param string $requestMethod the request method.
      * @param string $url the url from received request.
      * @param string $route the route to compare to.
-     * @return array returns an array containing [url, route, params, isMatch].
+     * @return object returns an array containing [url, route, params, isMatch].
      */
-    public static function getUrlInfo($url, $route)
+    public function getUrlInfo($requestMethod, $url, $route): object
     {
         /** get parameters */
-        $params = Url::getParams($route);
+        $params = $this->getParams($route);
 
         /** make the trailing slash optional */
         list($newRoute, $routeLength, $lastSlashPos) = [$route, strlen($route), strrpos($route, '/')];
@@ -61,11 +52,14 @@ class Url
             return !is_numeric($key) && $key !== 'valid';
         }, ARRAY_FILTER_USE_KEY);
 
-        return [
+        /** verify request method */
+        $method = (new Request())->method;
+
+        return (object)[
             'url'     => $url,
             'route'   => $route,
             'params'  => $params,
-            'isMatch' => isset($data['valid']),
+            'isMatch' => isset($data['valid']) && ($method === $requestMethod),
         ];
     }
 }
