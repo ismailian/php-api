@@ -2,21 +2,15 @@
 
 namespace PhpApi\Handlers;
 
+use PhpApi\Core\Helpers\Handler;
 use PhpApi\Core\Functions\Request;
 use PhpApi\Core\Functions\Response;
 
 /**
  * the home handler
  */
-class HomeHandler
+class HomeHandler extends Handler
 {
-
-    /**
-     * default constructor
-     */
-    public function __construct()
-    {
-    }
 
     /**
      * index method
