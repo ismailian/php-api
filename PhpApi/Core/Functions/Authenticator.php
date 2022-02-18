@@ -19,7 +19,7 @@ class Authenticator
     {
         $env = new Config();
         list($this->length, $this->pattern) = [$env->token()->length, $env->token()->pattern];
-        $this->pattern = str_replace('{n}', $this->length, $this->pattern);
+        $this->pattern = str_replace('{n}', '{' . $this->length . '}', $this->pattern);
     }
 
     /**
@@ -46,7 +46,7 @@ class Authenticator
         $authHeader = $req->headers->authorization;
         if (!$authHeader) return null;
 
-        @preg_match("/[Tt]oken (?<token>$this->pattern)/", $authHeader, $result);
+        @preg_match("/^([Tt]oken (?<token>{$this->pattern})$)/", $authHeader, $result);
         if (!isset($result['token'])) {
             throw new Exception('Token Is Invalid');
         }
