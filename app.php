@@ -6,6 +6,9 @@
 | Composer autoload |
 |--------------------
 */
+
+use PhpApi\Middlewares\Authorization;
+
 $autoload = __DIR__ . '/vendor/autoload.php';
 if (file_exists($autoload)) {
     require_once $autoload;
@@ -22,12 +25,10 @@ use PhpApi\Api;
 /** new Instance of Api App */
 $ApiApp = new Api($options = [
     'prefix' => '/api/v1',
-    'middlewares' => [
-        'Cors' => [
-            'origin'  => 'http://localhost',
-            'methods' => ['*'],
-            'headers'  => ['*']
-        ]
+    'Cors' => [
+        'origin'  => 'http://localhost',
+        'methods' => ['*'],
+        'headers' => ['*']
     ],
 ]);
 
@@ -39,3 +40,4 @@ $ApiApp = new Api($options = [
 */
 
 $ApiApp->get('/', 'HomeHandler.Index');
+$ApiApp->get('/posts', 'PostHandler.Index');
