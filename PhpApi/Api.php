@@ -2,21 +2,21 @@
 
 namespace PhpApi;
 
-/** show errors only */
-error_reporting(E_ERROR);
-
-use PhpApi\Core\Adapters\RouteAdapter;
 use PhpApi\Core\Functions\Router;
+use PhpApi\Core\Helpers\Cors;
 
 /**
  * The Api App class
  */
-class Api extends RouteAdapter
+class Api
 {
+
+    use Router;
+    use Cors;
 
     /**
      * default constructor
-     * @param Array $options the options to use with the app, containing ['prefix', 'middlewares'].
+     * @param Array $options the options to use with the app, containing ['prefix', 'cors'].
      */
     public function __construct($options = null)
     {
@@ -26,16 +26,13 @@ class Api extends RouteAdapter
             if (isset($options['prefix']))
                 $this->prefix = $options['prefix'];
 
-            /** assign middlewares */
-            if (isset($options['middlewares'])) {
-                $this->middlewares = $options['middlewares'];
+            /** assign cors */
+            if (isset($options['Cors'])) {
+                $this->cors = $options['Cors'];
             }
         }
 
-        /** initialize new instance of router */
-        $this->router = new Router();
-
-        /** use implemented middlewares */
-        $this->use();
+        /** implement Cors for this api app */
+        $this->cors($this->cors);
     }
 }
