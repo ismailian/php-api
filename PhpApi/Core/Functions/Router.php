@@ -8,8 +8,20 @@ use PhpApi\Core\Helpers\Url;
 /**
  * the router class
  */
-class Router
+trait Router
 {
+
+    use Url;
+
+    /**
+     * @var array $allowedMethods a list of allowed methods
+     */
+    public $allowedMethods = ['HEAD', 'GET', 'POST', 'PUT', 'DELETE'];
+
+    /**
+     * @var string $prefix the uri prefix.
+     */
+    public $prefix = '';
 
     /**
      * @var bool $handled a property indicating whether the route has been handled or not.
@@ -18,107 +30,71 @@ class Router
     private $handled = false;
 
     /**
-     * default constructor
-     */
-    function __construct()
-    {
-    }
-
-    /**
      * prepare a request and forward to the corresponding handler.
      * @param array $data the data containing info about route.
      */
-    public function handle(array $data)
+    private function handle(array $data)
     {
         /** verify data */
         if (is_null($data) || empty($data))
             throw new Exception("Router Data Cannot Be Empty.");
 
-        /**
-         * prepare request and response.
-         */
+        /** prepare request and response. */
         $request = new Request();
         $response = new Response();
 
-        /**
-         * prepare variables
-         */
-        list($method, $route, $handler) = array($data['method'], $data['uri'], $data['handler']);
-        $urlInfo = Url::getUrlInfo($request->route->uri, $route);
-        list($isMatch, $params) = [$urlInfo['isMatch'], $urlInfo['params']];
+        /** prepare variables */
+        list($route, $handler) = array($data['uri'], $data['handler']);
         list($handlerClass, $handlerMethod) = explode('.', $handler);
+        $urlInfo = $this->getUrlInfo($data['method'], $request->route->uri, $route);
 
         /** handler class */
         $handlerClass = 'PhpApi\\Handlers\\' . $handlerClass;
 
-        /** verify method */
-        if ($method === $request->method) {
+        /** verify if url matches the url */
+        if ($urlInfo->isMatch) {
+            $request->params = $urlInfo->params;
 
-            /** verify if url matches the url */
-            if ($isMatch) {
-                $request->params = (object)$params;
-
-                /** verify Handler exists */
-                if (!class_exists($handlerClass)) {
-                    throw new Exception('Handler Class Not Found.');
-                }
-
-                /** verify Method exists */
-                if (!method_exists(new $handlerClass(), $handlerMethod)) {
-                    throw new Exception('Handler Method Not Found.');
-                }
-
-                /** forward to handler */
-                @call_user_func([new $handlerClass(), $handlerMethod], $request, $response);
-                $this->handled = true;
+            /** verify Handler exists */
+            if (!class_exists($handlerClass)) {
+                throw new Exception('Handler Class Not Found.');
             }
+
+            /** verify Method exists */
+            if (!method_exists($handlerClass, $handlerMethod)) {
+                throw new Exception('Handler Method Not Found.');
+            }
+
+            /** forward to handler */
+            $this->handled = true;
+            return @call_user_func([new $handlerClass(), $handlerMethod], $request, $response);
         }
     }
 
     /**
-     * handle a request and return callback.
-     * @param array $ctx the context to handle.
-     * @param callback $callback the callback to call.
+     * __call method allows us to call method names dynamically.
+     * 
+     * @param string $name the method name.
+     * @param array $arguments the method args.
      */
-    public function callback(array $ctx, $callback)
+    public function __call($name, $arguments)
     {
-        /** verify context */
-        if (!is_array($ctx)) {
-            throw new Exception('Context Is Not Valid');
+        list($methodName, $route, $handlerClass) = [strtoupper($name), $arguments[0], $arguments[1]];
+
+        /** verify request method */
+        if (!in_array($methodName, $this->allowedMethods)) {
+            return (new Response())->status(405)->json([
+                'status' => false,
+                'message' => "method [$name] is not allowed on this resource."
+            ]);
         }
 
-        /** prevent double route handling */
-        if ($this->handled) {
-            return;
-        }
-
-        /**
-         * prepare request and response
-         */
-        $request = new Request();
-        $response = new Response();
-
-        /** extract info from context and prepare url match data */
-        list($method, $route) = [$ctx['method'], $ctx['uri']];
-        $urlInfo = Url::getUrlInfo($request->route->uri, $route);
-        list($isMatch, $params) = [$urlInfo['isMatch'], $urlInfo['params']];
-
-        /** set params to request */
-        $request->params = (object)$params;
-
-        /** all methods */
-        if ($method === '*' && $isMatch) {
-            $callback($request, $response);
-            $this->handled = true;
-        }
-
-        /** handle specific method */
-        if ($method !== '*' && $request->method === $method) {
-            if ($isMatch) {
-                $callback($request, $response);
-                $this->handled = true;
-            }
-        }
+        /** parse args */
+        $this->handle([
+            'method'  => $methodName,
+            'uri'     => ($this->prefix . $route),
+            'handler' => $handlerClass,
+        ]);
     }
 
     /**
@@ -126,8 +102,8 @@ class Router
      */
     public function __destruct()
     {
-        if (!$this->handled) {
-            return (new Response())->status(404)->json([
+        if ($this->handled === false) {
+            (new Response())->status(404)->json([
                 'status' => false,
                 'error' => 'route not found',
             ]);
