@@ -21,7 +21,7 @@ class Authorization extends Middleware
      */
     public function intercept(Request $req, Response $res)
     {
-        $this->auth = new Authenticator();
-        $this->allowed = $this->auth->check($req);
+        $auth = new Authenticator();
+        $this->allowed = $auth->check($req);
     }
 }
