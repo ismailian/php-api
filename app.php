@@ -39,3 +39,4 @@ $ApiApp = new Api($options = [
 
 $ApiApp->get('/', 'HomeHandler.Index');
 $ApiApp->get('/posts', 'PostHandler.Index');
+$ApiApp->get('/data', 'HomeHandler.Data');
