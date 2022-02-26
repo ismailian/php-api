@@ -27,4 +27,17 @@ class IPLogger
 
         return $ip;
     }
+
+    /**
+     * get client origin
+     * @return object returns object containing (hostname, ip_address, matches)
+     */
+    public static function origin()
+    {
+        return (object)[
+            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? $_SERVER['X-FORWARDED-FOR'],
+            'hostname'   => $_SERVER['HTTP_ORIGIN'] ?? null,
+            'matches'    => true
+        ];
+    }
 }
