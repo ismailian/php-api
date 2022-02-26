@@ -1,5 +1,6 @@
 <?php
 
+error_reporting(E_ALL);
 
 /*
 |--------------------
@@ -24,7 +25,7 @@ use PhpApi\Api;
 $ApiApp = new Api($options = [
     'prefix' => '/api/v1',
     'Cors' => [
-        'origin'  => 'http://localhost',
+        'origin'  => 'http://flexcore.me',
         'methods' => ['*'],
         'headers' => ['*']
     ],
