@@ -2,7 +2,6 @@
 
 namespace PhpApi\Handlers;
 
-use PhpApi\Core\Functions\Database;
 use PhpApi\Core\Helpers\Handler;
 use PhpApi\Core\Functions\Request;
 use PhpApi\Core\Functions\Response;
@@ -22,23 +21,7 @@ class HomeHandler extends Handler
     {
         $res->status(200)->json([
             'status' => true,
-            'data' => [
-                'route' => $req->route,
-            ]
-        ]);
-    }
-
-    /**
-     * 
-     * @param Request $req the current request
-     * @param Response $res the current response
-     */
-    public function Data(Request $req, Response $res)
-    {
-        $data = Database::instance()->limit(3)->select('wheels');
-        $res->status(200)->json([
-            'status' => true,
-            'data' => $data
+            'message' => 'Welcome to PhpAPI v1.0.0',
         ]);
     }
 }

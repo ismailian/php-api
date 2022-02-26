@@ -196,9 +196,6 @@ trait QueryBuilder
      * submits a query to the database.
      * 
      * @param string $query The query to submit.
-     * @param mixed $bindKeys The keys to bind to.
-     * @param mixed $bindValues The values to bind with.
-     * @return array|bool returns array of data or bool.
      */
     public function query(string $query = null)
     {
@@ -224,8 +221,12 @@ trait QueryBuilder
             /** capture error if any */
             $this->_error = $dbStatement->errorInfo ?? null;
 
+            /** return id if command == insert */
+            if ($this->_command === 'INSERT')
+                return $this->dbResource->lastInsertId();
+
             /** return status */
-            if (in_array($this->_command, ['INSERT', 'UPDATE', 'DELETE']))
+            if (in_array($this->_command, ['UPDATE', 'DELETE']))
                 return ($dbStatement->rowCount() > 0);
 
             /** return results */
