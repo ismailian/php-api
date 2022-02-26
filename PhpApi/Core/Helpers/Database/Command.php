@@ -18,6 +18,14 @@ trait Command
     {
         $this->_table = $table;
         $this->_command = 'SELECT';
+
+        /** add [id] to the fields if not there and if fields is not set to global(*) */
+        if (!in_array('*', $fields)) {
+            if (!in_array('id', $fields)) {
+                array_push($fields, 'id');
+            }
+        }
+
         $this->_fields = $fields;
         return $this->query();
     }
